@@ -10,9 +10,10 @@ dest_dir = ARGV[1]
 
 Dir.glob(File.join(source_dir, '*.{md, markdown}')).each do |path|
   raw_str = File.open(path, 'r') { |f| f.read }
-  needle_loc = raw_str.index('---')
-  metadata = raw_str[0, needle_loc]
-  content = raw_str[needle_loc...-1]
+  #needle_loc = raw_str.index('---')
+  metadata, content = raw_str.split('---', 2)
+  #metadata = raw_str[0, needle_loc]
+  #content = raw_str[needle_loc...-1]
 
   new_metadata = "---\nlayout: post\n"
 
@@ -32,7 +33,7 @@ Dir.glob(File.join(source_dir, '*.{md, markdown}')).each do |path|
     end
   end
 
-  new_metadata << "comments: true\n"
+  new_metadata << "comments: true\n---"
 
   base_name = File.basename(path)
   file_name = "#{prefix}-#{base_name}"
