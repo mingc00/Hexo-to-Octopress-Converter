@@ -1,0 +1,46 @@
+#! /usr/bin/env ruby
+
+if ARGV.length != 2
+  puts 'usage: ./converter <source_dir> <dest_dir>'
+  exit
+end
+
+source_dir = ARGV[0]
+dest_dir = ARGV[1]
+
+Dir.glob(File.join(source_dir, '*.{md, markdown}')).each do |path|
+  raw_str = File.open(path, 'r') { |f| f.read }
+  needle_loc = raw_str.index('---')
+  metadata = raw_str[0, needle_loc]
+  content = raw_str[needle_loc...-1]
+
+  new_metadata = "---\nlayout: post\n"
+
+  prefix = Time.now.strftime('%Y-%m-%d')  #default prefix
+  metadata.split("\n").each do |line|
+    title, value = line.split(': ', 2)
+    case title
+    when 'title'
+      new_metadata << "title: \"#{value}\"\n"
+    when 'tags'
+      new_metadata << "categorys: #{value}\n"
+    when 'date'
+      prefix = value.split[0]
+      new_metadata << "#{line}\n"
+    else
+      new_metadata << "#{line}\n"
+    end
+  end
+
+  new_metadata << "comments: true\n"
+
+  base_name = File.basename(path)
+  file_name = "#{prefix}-#{base_name}"
+  new_path = File.join(dest_dir, file_name)
+  print "Converting #{base_name} ... "
+  File.open(new_path, 'w') do |f|
+    f.write(new_metadata)
+    f.write(content)
+  end
+  puts 'Done'
+end
